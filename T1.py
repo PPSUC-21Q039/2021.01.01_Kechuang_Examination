@@ -11,6 +11,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from pandas import Series, DataFrame
+import time
 
 ##################################################################################
 # 函数功能：电话号码归属地查询（即目前通讯地址）
@@ -84,6 +85,7 @@ def get_id_information_address(input_id_number):
 #         id_address = str(id_address) + str(get_id_information_address(str(extract)))
 #     print(id_address)
 
+# 用于调试：
 # if __name__ == "__main__":
 #     id_number = ''
 #     print(get_id_information_address(id_number))
@@ -107,15 +109,42 @@ if __name__ == "__main__": # 被胡文强提到了主函数里面
     df = pd.read_excel("./考试数据.xls") # 被胡文强改为了相对路径
     # 对身份证一列进行数据提取
     ID_get = df['Unnamed: 7'].to_string(header=False, index=False).split('\n')
+    phone_number_get = df['Unnamed: 3'].to_string(header=False, index=False).split('\n')
     ID_get = ID_get[1:]
-    AGE_list = pd.DataFrame() # 建造一个空列表
+    phone_number_get = phone_number_get[1:]
+    # AGEADDRESS_list = pd.DataFrame()#建造一个空列表
+    output_list = pd.DataFrame()
     # 将身份证提取并作年龄处理
     for ID in (ID_get):
-        if (get_id_information_age(ID) != '-1'):
-            AGE = get_id_information_age(ID)
-        else:
-            AGE = 'error!'
-        AGE_list = AGE_list.append(pd.DataFrame({'Age': [AGE]}), ignore_index=True)
+        AGE = get_id_information_age(ID)
+        ADDRESS = get_id_information_address(ID)
+        # AGEADDRESS_list = AGEADDRESS_list.append(pd.DataFrame({'年龄': [AGE], '户籍地址': [ADDRESS]}), ignore_index=True)
+        output_list = output_list.append(pd.DataFrame({'年龄': [AGE], '户籍地址': [ADDRESS]}), ignore_index=True)
+    for PHONE in (phone_number_get):
+        PHONE_ADDRESS = get_phone_information_address(PHONE)
+        output_list = output_list.append(pd.DataFrame({'电话号码归属地': [PHONE_ADDRESS]}), ignore_index=True)
+
+
+    # 将年龄的字符串放入空列表中，并创建数组写入excel
+    output_list.to_excel(r'./数据结果.xls', index = False, header=True)
+
+    # end = time.clock()
+    # print("运行时间", end-start)
+
+    # 以下代码于2022.01.03 23：11 作废
+    #######################################################################
+    # 2022.01.03 23:09
+    # ID_get = df['Unnamed: 7'].to_string(header=False, index=False).split('\n')
+    # ID_get = ID_get[1:]
+    # AGE_list = pd.DataFrame() # 建造一个空列表
+    # # 将身份证提取并作年龄处理
+    # for ID in (ID_get):
+    #     if (get_id_information_age(ID) != '-1'):
+    #         AGE = get_id_information_age(ID)
+    #     else:
+    #         AGE = 'error!'
+    #     AGE_list = AGE_list.append(pd.DataFrame({'Age': [AGE]}), ignore_index=True)
+    #######################################################################
 
     #######################################################################
     # #将年龄的字符串放入空列表中，并创建数组写入excel
@@ -125,7 +154,7 @@ if __name__ == "__main__": # 被胡文强提到了主函数里面
     #######################################################################
 
     # 2022.01.03 将以上部分替换为了以下的
-    #将年龄的字符串放入空列表中，并创建数组写入excel
-    AGE_list.to_excel(r'./数据结果.xls', index = False, header=True)
+    # 将年龄的字符串放入空列表中，并创建数组写入excel
+    # AGE_list.to_excel(r'./数据结果.xls', index = False, header=True)
 
 ##################################################################################
