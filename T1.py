@@ -76,5 +76,6 @@ def get_id_information_address(input_id_number):
 #     print(id_address)
 
 if __name__ == "__main__":
-    print(get_id_information_address('23270020030307631X'))
-    print(get_id_information_age('23270020030307631X'))
+    id_number = ''
+    print(get_id_information_address(id_number))
+    print(get_id_information_age(id_number))
