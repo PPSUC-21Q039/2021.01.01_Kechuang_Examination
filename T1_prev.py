@@ -103,7 +103,6 @@ def get_id_information_address(input_id_number):
 # import matplotlib.pyplot as plt
 # from pandas import Series, DataFrame
 ######################################
-
 if __name__ == "__main__": # 被胡文强提到了主函数里面
     # 引入考试数据
     df = pd.read_excel("./考试数据.xls") # 被胡文强改为了相对路径
@@ -123,7 +122,6 @@ if __name__ == "__main__": # 被胡文强提到了主函数里面
     for PHONE in (phone_number_get):
         PHONE_ADDRESS = get_phone_information_address(PHONE)
         output_list = output_list.append(pd.DataFrame({'电话号码归属地': [PHONE_ADDRESS]}), ignore_index=True)
-
 
     # 将年龄的字符串放入空列表中，并创建数组写入excel
     output_list.to_excel(r'./数据结果.xls', index = False, header=True)

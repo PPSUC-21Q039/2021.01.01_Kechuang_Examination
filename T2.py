@@ -6,7 +6,7 @@ import json
 from requests.api import request
 from pandas import Series, DataFrame
 import pandas as pd
-
+import time
 
 # from bs4 import BeautifulSoup
 # import re
@@ -32,7 +32,7 @@ import pandas as pd
 # 备注：通过孟昊阳的高德地图账号申请到 key 为：aad49afa17b46e85e060bbe252f25a80
 def get_location(returned_information_format, input_x, input_y, input_key, returned_information_kind):
     # Url example: https://restapi.amap.com/v3/geocode/regeo?output=xml&location=116.310003,39.991957&key=<用户的key>&radius=1000&extensions=all (all/base)
-    if (input_x.strip() != 'NaN' or input_y.strip() != 'NaN'):
+    if (input_x.strip() != 'NaN' and input_y.strip() != 'NaN'):
         url = 'https://restapi.amap.com/v3/geocode/regeo?output=' + str(
             returned_information_format).strip() + 'xml&location=' + str(input_x).strip() + ',' + str(
             input_y).strip() + '&key=' + str(input_key).strip() + '&radius=1000' + '&extensions=' + str(
@@ -97,7 +97,6 @@ def get_processed_location(returned_result):
         return 'error: 网络错误!'
     elif (returned_result == '-2'):
         return 'error: 输入坐标不全!'
-
 ##################################################################################
 
 ##################################################################################
@@ -106,10 +105,13 @@ def get_processed_location(returned_result):
 # 主要思路：读入表格中的GPS列信息，利用上述函数进行处理，之后输出到Excel中
 # 具体实现：如代码中注释所述
 if __name__ == "__main__":
+    # 计时
+    T1 = time.time()
+
     # result = get_location('json', '119.944296584982', '30.097262635875', 'aad49afa17b46e85e060bbe252f25a80', 'base')
     # print(get_processed_location(result))
     # 引入考试数据
-    df = pd.read_excel("./考试数据.xls")  # 被胡文强改为了相对路径
+    df = pd.read_excel("./考试数据 (原件).xls")  # 被胡文强改为了相对路径
     # 对GPS两列进行数据提取
     GPS_get_x = df['GPS_X'].to_string(header=False, index=False).split('\n')
     GPS_get_x = GPS_get_x[1:]
@@ -118,11 +120,19 @@ if __name__ == "__main__":
     GPS_get_y = GPS_get_y[1:]
     # AGEADDRESS_list = pd.DataFrame()#建造一个空列表
     output_list = pd.DataFrame()
-    # 将身份证提取并作年龄处理
+    # 将GPS提取并处理得到具体地址
+    step_counter = 1
     for GPS_x, GPS_y in zip(GPS_get_x, GPS_get_y):
         GPS = get_processed_location(get_location('json', GPS_x, GPS_y, 'aad49afa17b46e85e060bbe252f25a80', 'base'))
         output_list = output_list.append(pd.DataFrame({'GPS地址': [GPS]}), ignore_index=True)
+        print(step_counter,": ", GPS)
+        step_counter = step_counter +1
 
     # 将年龄的字符串放入空列表中，并创建数组写入excel
     output_list.to_excel(r'./GPS数据结果.xls', index=False, header=True)
+
+    # 计时
+    T2 = time.time()
+
+    print('程序运行时间:%s秒' % (T2 - T1))
 ##################################################################################
