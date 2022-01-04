@@ -27,7 +27,7 @@ import pandas as pd
 #   5. returned_information_kind: 是返回所有的结果（all）还是单个（base）
 # 2. 通过 urllib 的 request 来调取API得到返回值，如果正常则返回 string 类型的 returned_result，如果有异常则返回 string 类型的 '-1'
 # 3. 将返回值给别的函数（get_processed_location）处理，得到所需数据
-# 备注：通过孟浩阳的高德地图账号申请到 key 为：aad49afa17b46e85e060bbe252f25a80
+# 备注：通过孟昊阳的高德地图账号申请到 key 为：aad49afa17b46e85e060bbe252f25a80
 def get_location(returned_information_format, input_x, input_y, input_key, returned_information_kind):
     # Url example: https://restapi.amap.com/v3/geocode/regeo?output=xml&location=116.310003,39.991957&key=<用户的key>&radius=1000&extensions=all (all/base)
     url = 'https://restapi.amap.com/v3/geocode/regeo?output=' + str(returned_information_format).strip() + 'xml&location=' + str(input_x).strip() + ',' + str(input_y).strip() + '&key=' + str(input_key).strip() + '&radius=1000' + '&extensions=' + str(returned_information_kind).strip()
@@ -89,7 +89,7 @@ def get_processed_location(returned_result):
 
 ##################################################################################
 # 函数功能：读取表格中的数据并处理，完成后进行输出
-# 作者：孟浩阳，胡文强
+# 作者：孟昊阳，胡文强
 # 主要思路：读入表格中的GPS列信息，利用上述函数进行处理，之后输出到Excel中
 # 具体实现：如代码中注释所述
 # Bugs：有异常的无法显示异常信息，只会显示为空
