@@ -105,7 +105,6 @@ def get_processed_location(returned_result):
 # 作者：孟昊阳，胡文强
 # 主要思路：读入表格中的GPS列信息，利用上述函数进行处理，之后输出到Excel中
 # 具体实现：如代码中注释所述
-# Bugs：有异常的无法显示异常信息，只会显示为空
 if __name__ == "__main__":
     # result = get_location('json', '119.944296584982', '30.097262635875', 'aad49afa17b46e85e060bbe252f25a80', 'base')
     # print(get_processed_location(result))
