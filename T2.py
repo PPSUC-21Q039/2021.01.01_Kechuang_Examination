@@ -4,6 +4,8 @@
 import urllib
 import json
 from requests.api import request
+from pandas import Series, DataFrame
+import pandas as pd
 
 # from bs4 import BeautifulSoup
 # import re
@@ -79,12 +81,28 @@ def get_processed_location(returned_result):
             processed_location = temp["regeocode"]["formatted_address"]
             return processed_location
         except:
-            return 'error: 坐标有误！'
+            return 'error: 坐标有误!'
     else:
-        return 'error: 网络错误！'
+        return 'error: 网络错误!'
 
 
 if __name__ == "__main__":
-    result = get_location('json', '119.944296584982', '30.097262635875', 'aad49afa17b46e85e060bbe252f25a80', 'base')
-    print(get_processed_location(result))
-    
+    # result = get_location('json', '119.944296584982', '30.097262635875', 'aad49afa17b46e85e060bbe252f25a80', 'base')
+    # print(get_processed_location(result))
+    # 引入考试数据
+    df = pd.read_excel("./考试数据 (原件).xls") # 被胡文强改为了相对路径
+    # 对GPS两列进行数据提取
+    GPS_get_x = df['GPS_X'].to_string(header=False, index=False).split('\n')
+    GPS_get_x = GPS_get_x[1:]
+
+    GPS_get_y = df['GPS_Y'].to_string(header=False, index=False).split('\n')
+    GPS_get_y = GPS_get_y[1:]
+    # AGEADDRESS_list = pd.DataFrame()#建造一个空列表
+    output_list = pd.DataFrame()
+    # 将身份证提取并作年龄处理
+    for GPS_x, GPS_y in zip(GPS_get_x, GPS_get_y):
+        GPS = get_processed_location(get_location('json', GPS_x, GPS_y, 'aad49afa17b46e85e060bbe252f25a80', 'base'))
+        output_list = output_list.append(pd.DataFrame({'GPS地址': [GPS]}), ignore_index=True)
+
+    # 将年龄的字符串放入空列表中，并创建数组写入excel
+    output_list.to_excel(r'./GPS数据结果.xls', index = False, header=True)
