@@ -7,6 +7,7 @@ from requests.api import request
 from pandas import Series, DataFrame
 import pandas as pd
 
+
 # from bs4 import BeautifulSoup
 # import re
 # import json
@@ -20,24 +21,31 @@ import pandas as pd
 # 主要思路：通过获取的数据，构造URL并通过requests库向高德地图 API 访问得到返回值，再进行数据处理得到有效信息
 # 具体实现：
 # 1. 获取值：
-#   1. returned_information_format: 返回信息的类型：json 还是 xml，我觉得json更分别分析
+#   1. returned_information_format: 返回信息的类型：json 还是 xml，我觉得json更方便分析
 #   2. input_x, input_y: 输入的 GPS 的 X、Y 坐标
 #   3. input_key: 用户 Key
 #   4. result_radius: 查询的半径
 #   5. returned_information_kind: 是返回所有的结果（all）还是单个（base）
-# 2. 通过 urllib 的 request 来调取API得到返回值，如果正常则返回 string 类型的 returned_result，如果有异常则返回 string 类型的 '-1'
-# 3. 将返回值给别的函数（get_processed_location）处理，得到所需数据
+# 2. 校验值是否为 NaN，如果是则直接返回 '-2', 表示输入数据有误
+# 3. 通过 urllib 的 request 来调取API得到返回值，如果正常则返回 string 类型的 returned_result，如果有异常则返回 string 类型的 '-1'
+# 4. 将返回值给别的函数（get_processed_location）处理，得到所需数据
 # 备注：通过孟昊阳的高德地图账号申请到 key 为：aad49afa17b46e85e060bbe252f25a80
 def get_location(returned_information_format, input_x, input_y, input_key, returned_information_kind):
     # Url example: https://restapi.amap.com/v3/geocode/regeo?output=xml&location=116.310003,39.991957&key=<用户的key>&radius=1000&extensions=all (all/base)
-    url = 'https://restapi.amap.com/v3/geocode/regeo?output=' + str(returned_information_format).strip() + 'xml&location=' + str(input_x).strip() + ',' + str(input_y).strip() + '&key=' + str(input_key).strip() + '&radius=1000' + '&extensions=' + str(returned_information_kind).strip()
-    try:
-        returned_result = urllib.request.urlopen(url).read()
-        returned_result = returned_result.decode()
-        returned_result = str(returned_result)
-        return returned_result
-    except:
-        return '-1'
+    if (input_x.strip() != 'NaN' or input_y.strip() != 'NaN'):
+        url = 'https://restapi.amap.com/v3/geocode/regeo?output=' + str(
+            returned_information_format).strip() + 'xml&location=' + str(input_x).strip() + ',' + str(
+            input_y).strip() + '&key=' + str(input_key).strip() + '&radius=1000' + '&extensions=' + str(
+            returned_information_kind).strip()
+        try:
+            returned_result = urllib.request.urlopen(url).read()
+            returned_result = returned_result.decode()
+            returned_result = str(returned_result)
+            return returned_result
+        except:
+            return '-1'
+    else:
+        return '-2'
     #############################################################
     # try:
     #     # returned_result = requests.get(url, timeout=300)
@@ -63,6 +71,8 @@ def get_location(returned_information_format, input_x, input_y, input_key, retur
     # except:
     #     return -1
     #############################################################
+
+
 ##################################################################################
 
 ##################################################################################
@@ -73,17 +83,20 @@ def get_location(returned_information_format, input_x, input_y, input_key, retur
 # 1. 进行校验，若 return_result 不为 -1 （即网络正常，可访问）则开始处理：
 #   1. 将 returned_result 转为json数据
 #   2. 从中提取出 regeocode 中的 formatted_address 项，如果失败返回 “error: 坐标有误！”
-# 2. 若为 -1 则返回结果 “error: 网络错误！”
+# 2. 若为 '-1' 则返回结果 “error: 网络错误！”
+# 3. 若为 '-2' 则返回结果 “error: 输入坐标不全!”
 def get_processed_location(returned_result):
-    if (returned_result != '-1'):
+    if (returned_result != '-1' and returned_result != '-2'):
         try:
             temp = json.loads(returned_result)
             processed_location = temp["regeocode"]["formatted_address"]
             return processed_location
         except:
             return 'error: 坐标有误!'
-    else:
+    elif (returned_result == '-1'):
         return 'error: 网络错误!'
+    elif (returned_result == '-2'):
+        return 'error: 输入坐标不全!'
 
 ##################################################################################
 
@@ -97,7 +110,7 @@ if __name__ == "__main__":
     # result = get_location('json', '119.944296584982', '30.097262635875', 'aad49afa17b46e85e060bbe252f25a80', 'base')
     # print(get_processed_location(result))
     # 引入考试数据
-    df = pd.read_excel("./考试数据 (原件).xls") # 被胡文强改为了相对路径
+    df = pd.read_excel("./考试数据.xls")  # 被胡文强改为了相对路径
     # 对GPS两列进行数据提取
     GPS_get_x = df['GPS_X'].to_string(header=False, index=False).split('\n')
     GPS_get_x = GPS_get_x[1:]
@@ -112,5 +125,5 @@ if __name__ == "__main__":
         output_list = output_list.append(pd.DataFrame({'GPS地址': [GPS]}), ignore_index=True)
 
     # 将年龄的字符串放入空列表中，并创建数组写入excel
-    output_list.to_excel(r'./GPS数据结果.xls', index = False, header=True)
+    output_list.to_excel(r'./GPS数据结果.xls', index=False, header=True)
 ##################################################################################
