@@ -113,7 +113,7 @@ def main_function():
     for ID in (ID_get):
         AGE = get_id_information_age(ID)
         ADDRESS = get_id_information_address(ID)
-        AGEADDRESS_list = AGEADDRESS_list.append(pd.DataFrame({'年龄': [AGE], '户籍地址': [ADDRESS]}), ignore_index=True)
+        AGEADDRESS_list = AGEADDRESS_list.append(pd.DataFrame({'年龄': [AGE], '地址': [ADDRESS]}), ignore_index=True)
     # 将得到年龄地址Datafarme和之前的已有信息Datafarme进行合并
 
     # 提取电话号信息
