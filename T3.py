@@ -16,29 +16,29 @@ def get_path(start_gps_x, start_gps_y, end_gps_x, end_gps_y, user_key):
     else:
         return '-2'
     
-def time_cost(returned_result):
-    if (returned_result != '-1' and returned_result != '-2'):
-        temp = json.loads(returned_result)
-        processed_path_time = temp["route"]["paths"]["duration"]
-        return processed_path_time
-    elif (returned_result == '-1'):
-        return 'error: 网络错误!'
-    elif (returned_result == '-2'):
-        return 'error: 输入坐标不全!'
+# def time_cost(returned_result):
+#     if (returned_result != '-1' and returned_result != '-2'):
+#         temp = json.loads(returned_result)
+#         processed_path_time = temp["route"]["paths"]["duration"]
+#         return processed_path_time
+#     elif (returned_result == '-1'):
+#         return 'error: 网络错误!'
+#     elif (returned_result == '-2'):
+#         return 'error: 输入坐标不全!'
 
-def process_path(returned_result):
-    if (returned_result != '-1' and returned_result != '-2'):
-        temp = json.loads(returned_result)
-        processed_path_origin = temp["route"]["paths"]
-        return 
-    elif (returned_result == '-1'):
-        return 'error: 网络错误!'
-    elif (returned_result == '-2'):
-        return 'error: 输入坐标不全!'
+# def process_path(returned_result):
+#     if (returned_result != '-1' and returned_result != '-2'):
+#         temp = json.loads(returned_result)
+#         processed_path_origin = temp["route"]["paths"]
+#         return 
+#     elif (returned_result == '-1'):
+#         return 'error: 网络错误!'
+#     elif (returned_result == '-2'):
+#         return 'error: 输入坐标不全!'
 
 
 if __name__ == "__main__":
     result = get_path('119.944296584982','30.097262635875','119.945421709799','30.045358805853','aad49afa17b46e85e060bbe252f25a80')
     result_path = process_path(result)
     print(result_path)
-    print(str(time_cost(result_path)))
+    print(time_cost(result_path))
