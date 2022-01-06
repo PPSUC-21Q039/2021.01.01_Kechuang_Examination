@@ -2,6 +2,7 @@
 # 根据所给出的事故双方的当事人的身份证号，判断其身份证号是否合法，并对身份证号、电话号码进行解析（ id_validator，phonenumber）获取其年龄、户籍、目前通讯地址（电话号码所在地）。通过统计身份证号，以及所给人员的信息，对事故多发人员的户籍地、年龄、居住社区，并进行可视化，对高发事故人员画像。
 # 
 # 注释要求：函数的第一行描述函数功能，第二行写作者，第三行描述具体思路，第四行分点完成具体实现
+#预计运行时间8分钟
 
 import phone 
 from id_validator import validator
@@ -91,7 +92,7 @@ def get_id_information_address(input_id_number):
 def main_function():
     start_time = time.time()
     # 引入考试数据
-    df = pd.read_excel("./考试数据.xls")
+    df = pd.read_excel(r'./考试数据.xls')
     # 对身份证一列进行数据提取
     ID_get = df['Unnamed: 7'].to_string(header=False, index=False).split('\n')
     ID_get = ID_get[1:]
@@ -139,7 +140,7 @@ def main_function():
     AGEADDRESSPhone_list = pd.concat([AGEADDRESS_list, Phone_list], axis=1)
     AGEADDRESSPhone_list = df_blank.append(AGEADDRESSPhone_list, ignore_index=True)
     AGEADDRESSPhone_list = pd.concat([df_base3 ,AGEADDRESSPhone_list], axis=1)
-    AGEADDRESSPhone_list.to_excel(r'./数据结果.xlsx', index = False, header=True)
+    AGEADDRESSPhone_list.to_excel(r'./数据结果.xls', index = False, header=True)
 
     end_time = time.time()
     print ("Used Time: ", end_time - start_time,'s')
@@ -151,7 +152,7 @@ def main_function():
 
 def print_phonenumber():
     def year_repeat(df_year1, df_year2):
-        workbook = xlsxwriter.Workbook(r'C:/Users/90550/Desktop/高发年龄段.xlsx')
+        workbook = xlsxwriter.Workbook(r'./高发年龄段.xlsx')
         worksheet = workbook.add_worksheet('statistics')
         bold_format = workbook.add_format({'bold': True})
         # 将二行二列设置宽度为15(从0开始)
@@ -195,7 +196,7 @@ def print_phonenumber():
     if __name__ == "__main__":
         # 访问文件
 
-        reader = xlrd.open_workbook(r'C:/Users/90550/Desktop/数据结果.xls')
+        reader = xlrd.open_workbook(r'./数据结果.xls')
         sheet = reader.sheet_by_name("Sheet1")
 
         column1 = sheet.col_values(3)  # 统计文件中的第三列数据
@@ -205,7 +206,7 @@ def print_phonenumber():
         for i in set(column1):
             result[i] = column1.count(i)
         del result['年龄']
-        del result[-1.0]
+        #del result['error: 身份证号有误，无法处理年龄!']
         data = result
         # print(data)
         # 新建列表储存图书信息Book score和Quantity信息
@@ -283,7 +284,9 @@ def print_addressnumber():
         result = {}
         for i in (column2):
             result[i] = column2.count(i)
-        del result['非法号码']
+        del result['error: 虚拟号码!']
+        del result['error: 非法号码!']
+        del result['error: 无输入号码!']
         del result['归属地']
         data = result
         # print(data)
@@ -377,7 +380,7 @@ def print_province():
                 result.append(i)
             result_province[i] = result.count(i)
         del result_province['地址']
-        del result_province[-1.0]
+        del result_province['error: 身份证号有误，无法处理户籍地址!']
         data = result_province
         # print(data)
         # 新建列表储存图书信息Book score和Quantity信息
@@ -403,17 +406,16 @@ def print_province():
 
 if __name__ == "__main__":
     main_function()
-    from openpyxl import load_workbook
 
-    wb = load_workbook(r'./数据结果.xlsx')
-    ws = wb[wb.sheetnames[0]]  # 打开第一个sheet
-    ws.column_dimensions['A'].width = 19.0  # 调整列A宽
-    ws.column_dimensions['B'].width = 8.0
-    ws.column_dimensions['C'].width = 20.0
-    ws.column_dimensions['D'].width = 7.0
-    ws.column_dimensions['E'].width = 40.0
-    ws.column_dimensions['F'].width = 13.0
-    wb.save(r'./数据结果.xlsx')
+    #wb = load_workbook(r'C:/Users/90550/Desktop/数据结果.xlsx')
+    #ws = wb[wb.sheetnames[0]]  # 打开第一个sheet
+    #ws.column_dimensions['A'].width = 19.0  # 调整列A宽
+    #ws.column_dimensions['B'].width = 8.0
+    #ws.column_dimensions['C'].width = 20.0
+    #ws.column_dimensions['D'].width = 7.0
+    #ws.column_dimensions['E'].width = 40.0
+    #ws.column_dimensions['F'].width = 13.0
+    #wb.save(r'C:/Users/90550/Desktop/数据结果.xlsx')
     print_phonenumber()
     print_addressnumber()
     print_province()
