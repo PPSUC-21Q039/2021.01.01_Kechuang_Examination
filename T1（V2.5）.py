@@ -1,25 +1,29 @@
 # 第一题题目：
 # 根据所给出的事故双方的当事人的身份证号，判断其身份证号是否合法，并对身份证号、电话号码进行解析（ id_validator，phonenumber）获取其年龄、户籍、目前通讯地址（电话号码所在地）。通过统计身份证号，以及所给人员的信息，对事故多发人员的户籍地、年龄、居住社区，并进行可视化，对高发事故人员画像。
-# 
+
 # 注释要求：函数的第一行描述函数功能，第二行写作者，第三行描述具体思路，第四行分点完成具体实现
-#预计运行时间8分钟
+
+# 预计运行时间：8分钟
+
+# 程序输入输出介绍：
+# 1. 程序输入：程序输入文件为本次发放的考试数据，文件名为 考试数据.xls
+# 2. 程序输出：
+#   1. 程序终端输出：本程序运行所用时间
+#   2. 程序文件输出：
+#       1. 数据结果.xls：为处理后的全部一手数据
+#       2. 高发电话号码归属地统计.xlsx：为电话号码归属地以市级为标准的统计结果，同时附带有可视化图表
+#       3. 高发人员户籍统计.xlsx：为按身份证号对应户籍地以省级为标准的统计结果，同时附带有可视化图表
+#       4. 高发年龄段统计.xlsx：为按身份证号对应年龄以整数为标准的统计结果，同时附带有可视化图表
 
 import phone 
 from id_validator import validator
 import time
-import openpyxl
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from pandas import Series, DataFrame
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, wait, ALL_COMPLETED
 import xlsxwriter
-import xlsxreader
 import xlrd
-from collections import Counter
-from openpyxl import load_workbook
-import os
+import warnings
 
+warnings.filterwarnings("ignore")
 
 list1 = [134, 135, 136, 137, 138, 139, 147, 150, 151, 152, 157, 158, 159, 178, 182, 183, 184, 187, 188,
          198, 130, 131, 132, 155, 156, 185, 186, 145, 146, 166, 175, 176, 133, 153, 177, 180, 181, 189, 173, 199, 191]
@@ -92,7 +96,11 @@ def get_id_information_address(input_id_number):
 def main_function():
     start_time = time.time()
     # 引入考试数据
-    df = pd.read_excel(r'./考试数据.xls')
+    try:
+        df = pd.read_excel(r'./考试数据.xls')
+    except:
+        print("Error: 输入文件 (考试数据.xls) 错误!")
+        quit()
     # 对身份证一列进行数据提取
     ID_get = df['Unnamed: 7'].to_string(header=False, index=False).split('\n')
     ID_get = ID_get[1:]
@@ -152,7 +160,11 @@ def main_function():
 
 def print_phonenumber():
     def year_repeat(df_year1, df_year2):
-        workbook = xlsxwriter.Workbook(r'./高发年龄段.xlsx')
+        try:
+            workbook = xlsxwriter.Workbook(r'./高发年龄段统计.xlsx')
+        except:
+            print("Error: 文件 (高发年龄段统计.xlsx) 被占用!")
+            quit()
         worksheet = workbook.add_worksheet('statistics')
         bold_format = workbook.add_format({'bold': True})
         # 将二行二列设置宽度为15(从0开始)
@@ -195,8 +207,11 @@ def print_phonenumber():
 
     if __name__ == "__main__":
         # 访问文件
-
-        reader = xlrd.open_workbook(r'./数据结果.xls')
+        try:
+            reader = xlrd.open_workbook(r'./数据结果.xls')
+        except:
+            print("Error: 输入文件 (考试数据.xls) 错误!")
+            quit()
         sheet = reader.sheet_by_name("Sheet1")
 
         column1 = sheet.col_values(3)  # 统计文件中的第三列数据
@@ -205,8 +220,12 @@ def print_phonenumber():
         result = {}
         for i in set(column1):
             result[i] = column1.count(i)
-        del result['年龄']
-        del result[-1.0]
+        try:
+            del result['年龄']
+            del result[-1.0]
+        except:
+            pass
+        
         data = result
         # print(data)
         # 新建列表储存图书信息Book score和Quantity信息
@@ -225,12 +244,17 @@ def print_phonenumber():
         a = list(map(int, a))
         b = list(map(int, b))
 
-        print(a)
-        print(b)
+        # print(a)
+        # print(b)
         year_repeat(a, b)
+
 def print_addressnumber():
     def address_repeat(df_address1, df_address2):
-        workbook = xlsxwriter.Workbook(r'./高发电话号归属地.xlsx')
+        try:
+            workbook = xlsxwriter.Workbook(r'./高发电话号码归属地统计.xlsx')
+        except:
+            print("Error: 文件 (高发电话号码归属地统计.xlsx) 被占用!")
+            quit()
         worksheet = workbook.add_worksheet('statistics')
         bold_format = workbook.add_format({'bold': True})
         # 将二行二列设置宽度为15(从0开始)
@@ -274,8 +298,11 @@ def print_addressnumber():
 
     if __name__ == "__main__":
         # 访问文件
-
-        reader = xlrd.open_workbook(r'./数据结果.xls')
+        try:
+            reader = xlrd.open_workbook(r'./数据结果.xls')
+        except:
+            print("Error: 输入文件 (考试数据.xls) 错误!")
+            quit()
         sheet = reader.sheet_by_name("Sheet1")
 
         column2 = sheet.col_values(5)  # 统计文件中的第6列数据
@@ -284,10 +311,13 @@ def print_addressnumber():
         result = {}
         for i in (column2):
             result[i] = column2.count(i)
-        del result['error: 虚拟号码!']
-        del result['error: 非法号码!']
-        del result['error: 无输入号码!']
-        del result['归属地']
+        try:    
+            del result['error: 虚拟号码!']
+            del result['error: 非法号码!']
+            del result['error: 无输入号码!']
+            del result['归属地']
+        except:
+            pass
         data = result
         # print(data)
         # 新建列表储存图书信息Book score和Quantity信息
@@ -306,12 +336,17 @@ def print_addressnumber():
         # a = list(map(int, a))
         b = list(map(int, b))
 
-        print(a)
-        print(b)
+        # print(a)
+        # print(b)
         address_repeat(a, b)
+
 def print_province():
     def province_repeat(df_province1, df_province2):
-        workbook = xlsxwriter.Workbook(r'./高发人员户籍.xlsx')
+        try:
+            workbook = xlsxwriter.Workbook(r'./高发人员户籍统计.xlsx')
+        except:
+            print("Error: 文件 (高发人员户籍统计.xlsx) 被占用!")
+            quit()
         worksheet = workbook.add_worksheet('statistics')
         bold_format = workbook.add_format({'bold': True})
         # 将二行二列设置宽度为15(从0开始)
@@ -355,8 +390,11 @@ def print_province():
 
     if __name__ == "__main__":
         # 访问文件
-
-        reader = xlrd.open_workbook(r'./数据结果.xls')
+        try:
+            reader = xlrd.open_workbook(r'./数据结果.xls')
+        except:
+            print("Error: 输入文件 (考试数据.xls) 错误!")
+            quit()
         sheet = reader.sheet_by_name("Sheet1")
 
         column3 = sheet.col_values(4)  # 统计文件中的第5列数据
@@ -376,10 +414,13 @@ def print_province():
                 i = i.replace('特', '')
                 i = i.replace('宁夏回', '宁夏')
                 i = i.replace('壮', '')
-                print(i)
+                # print(i)
                 result.append(i)
             result_province[i] = result.count(i)
-        del result_province['地址']
+        try:
+            del result_province['地址']
+        except:
+            pass
 
         data = result_province
         # print(data)
@@ -399,8 +440,8 @@ def print_province():
         # a = list(map(int, a))
         b = list(map(int, b))
 
-        print(a)
-        print(b)
+        # print(a)
+        # print(b)
         province_repeat(a, b)
 
 
