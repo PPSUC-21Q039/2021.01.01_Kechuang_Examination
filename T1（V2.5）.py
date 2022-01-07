@@ -6,7 +6,7 @@
 # 预计运行时间：8分钟
 
 # 程序输入输出介绍：
-# 1. 程序输入：程序输入文件为本次发放的考试数据，文件名为 考试数据.xls
+# 1. 程序输入：程序输入文件为本次发放的考试数据，文件名为：考试数据.xls
 # 2. 程序输出：
 #   1. 程序终端输出：本程序运行所用时间
 #   2. 程序文件输出：
@@ -152,11 +152,6 @@ def main_function():
 
     end_time = time.time()
     print ("Used Time: ", end_time - start_time,'s')
-    # 后期维护升级内容： 1.提高运行速度，方向：利用pool池子多线程，或者，利用迭代（暂时还没查到）,或者用Numba暴力加速，但这个库只支持函数，要想办法把内容变成函数
-    #                  2.加入计时器 (已完成)
-    #                  3.利用numpy和matlop进行可视化（同样要考虑时间优化问题），或者直接在excel上进行图表展示
-    #                  4.大部分可以简化，之后有时间再弄吧
-
 
 def print_phonenumber():
     def year_repeat(df_year1, df_year2):
@@ -410,10 +405,13 @@ def print_province():
                 a = str(i)
             else:
                 i = i[0:3]
-                i = i.replace('新疆维', '新疆')
-                i = i.replace('特', '')
-                i = i.replace('宁夏回', '宁夏')
-                i = i.replace('壮', '')
+                try:
+                    i = i.replace('新疆维', '新疆')
+                    i = i.replace('特', '')
+                    i = i.replace('宁夏回', '宁夏')
+                    i = i.replace('壮', '')
+                except:
+                    pass
                 # print(i)
                 result.append(i)
             result_province[i] = result.count(i)
@@ -447,6 +445,10 @@ def print_province():
 
 if __name__ == "__main__":
     main_function()
+    print_phonenumber()
+    print_addressnumber()
+    print_province()
+
     #wb = load_workbook(r'./数据结果.xlsx')
     #ws = wb[wb.sheetnames[0]]  # 打开第一个sheet
     #ws.column_dimensions['A'].width = 19.0  # 调整列A宽
@@ -456,7 +458,3 @@ if __name__ == "__main__":
     #ws.column_dimensions['E'].width = 40.0
     #ws.column_dimensions['F'].width = 13.0
     #wb.save(r'./数据结果.xlsx')
-    print_phonenumber()
-    print_addressnumber()
-    print_province()
-

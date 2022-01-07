@@ -1,19 +1,20 @@
 # 第二题题目：
 # 根据标注地点从地图API获取其具体坐标
 
+# 程序输入输出介绍：
+# 1. 程序输入：程序输入文件为本次发放的考试数据，文件名为：考试数据.xls
+# 2. 程序输出：
+#   1. 程序终端输出：
+#       1. 获取并处理后的地址信息
+#       2. 本程序运行所用时间
+#   2. 程序文件输出：GPS数据结果.xlsx，为程序处理后得到的地址信息配合其他基本信息组合得到的输出
+
 import urllib
 import json
 from requests.api import request
-from pandas import Series, DataFrame
 import pandas as pd
 import time
-import matplotlib.pyplot as plt
-# from bs4 import BeautifulSoup
-# import re
-# import json
-# import pycurl
-# from io import BytesIO
-# import requests
+from openpyxl import load_workbook
 
 ##################################################################################
 # 函数功能：调取高德地图API获得信息
@@ -46,33 +47,6 @@ def get_location(returned_information_format, input_x, input_y, input_key, retur
             return '-1'
     else:
         return '-2'
-    #############################################################
-    # try:
-    #     # returned_result = requests.get(url, timeout=300)
-    #     returned_result = urllib3.urlopen(url)
-    #     return returned_result
-    # except:
-    #     return -1
-    # with urllib.request.urlopen(url) as response:
-    #     returned_result = response.read()
-    #     returned_result.encode(encoding='utf-8',errors='strict')
-    #     return returned_result
-    #############################################################
-    #############################################################
-    # 以下可行但是会乱码
-    # try:
-    #     returned_result = pycurl.Curl()
-    #     returned_result.setopt(pycurl.URL, url) 
-    #     returned_result.setopt(pycurl.SSL_VERIFYPEER, False)
-    #     returned_result.perform()
-    #     returned_result.encode(encoding='utf-8',errors='strict')
-    #     #returned_result.encode('gb2312') 
-    #     return returned_result
-    # except:
-    #     return -1
-    #############################################################
-
-
 ##################################################################################
 
 ##################################################################################
@@ -99,6 +73,27 @@ def get_processed_location(returned_result):
         return 'error: 输入坐标不全!'
 ##################################################################################
 
+def set_format():
+    try:
+        wb = load_workbook(r'./GPS数据结果.xlsx')
+    except:
+        print("Error: 文件 (GPS数据结果.xlsx) 被占用!")
+        quit()
+    ws = wb[wb.sheetnames[0]]  # 打开第一个sheet
+    ws.column_dimensions['A'].width = 31.0  # 调整列A宽
+    ws.column_dimensions['B'].width = 19.0
+    ws.column_dimensions['C'].width = 8.0
+    ws.column_dimensions['D'].width = 15.0
+    ws.column_dimensions['E'].width = 20.0
+    ws.column_dimensions['F'].width = 20.0
+    ws.column_dimensions['G'].width = 80.0
+    try:
+        wb.save(r'./GPS数据结果.xlsx')
+    except:
+        print("Error: 文件 (GPS数据结果.xlsx) 被占用!")
+        quit()
+    return
+
 ##################################################################################
 # 函数功能：读取表格中的数据并处理，完成后进行输出
 # 作者：孟昊阳，胡文强
@@ -111,7 +106,11 @@ if __name__ == "__main__":
     # result = get_location('json', '119.944296584982', '30.097262635875', 'aad49afa17b46e85e060bbe252f25a80', 'base')
     # print(get_processed_location(result))
     # 引入考试数据
-    df = pd.read_excel("./考试数据.xls")  # 被胡文强改为了相对路径
+    try:
+        df = pd.read_excel("./考试数据.xls")  # 被胡文强改为了相对路径
+    except:
+        print("Error: 输入文件 (考试数据.xls) 错误!")
+        quit()
     # 对GPS两列进行数据提取
     GPS_get_x = df['GPS_X'].to_string(header=False, index=False).split('\n')
     GPS_get_x = GPS_get_x[1:]
@@ -160,25 +159,14 @@ if __name__ == "__main__":
     df_base3 = df_blank2.append(df_base3, ignore_index=True)
     output_list = pd.concat([df_base3, output_list], axis=1)
 
-##################################################################################
+    try:
+        output_list.to_excel(r'./GPS数据结果.xlsx', index=False, header=True)
+    except:
+        print("Error: 文件 (GPS数据结果.xlsx) 被占用!")
+        quit()
 
-    output_list.to_excel(r'./GPS数据结果.xlsx', index=False, header=True)
-##################################################################################
-    ###设置excel表格格式
-    from openpyxl import load_workbook
-
-    wb = load_workbook(r'./GPS数据结果.xlsx')
-    ws = wb[wb.sheetnames[0]]  # 打开第一个sheet
-    ws.column_dimensions['A'].width = 31.0  # 调整列A宽
-    ws.column_dimensions['B'].width = 19.0
-    ws.column_dimensions['C'].width = 8.0
-    ws.column_dimensions['D'].width = 15.0
-    ws.column_dimensions['E'].width = 20.0
-    ws.column_dimensions['F'].width = 20.0
-    ws.column_dimensions['G'].width = 80.0
-    wb.save(r'./GPS数据结果.xlsx')
+    set_format() # 设置excel表格格式
     # 计时
     T2 = time.time()
-
     print('程序运行时间:%s秒' % (T2 - T1))
 ##################################################################################
