@@ -1,0 +1,687 @@
+<link href="${ctxPath}/static/css/plugins/jsTree/style.min.css" rel="stylesheet">
+<link href="${ctxPath}/static/css/gdInfoWindow.css" rel="stylesheet">
+<link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css"/>
+<style>
+    html, body, #container {
+        height: 100%;
+        width: 100%;
+    }
+    #panel {
+        position: fixed;
+        background-color: white;
+        max-height: 90%;
+        overflow-y: auto;
+        top: 10px;
+        right: 10px;
+        width: 280px;
+    }
+    #panel .amap-call {
+        background-color: #009cf9;
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+    }
+    #panel .amap-lib-driving {
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
+        overflow: hidden;
+    }
+    .input-card {
+        display: flex;
+        flex-direction: column;
+        min-width: 0px;
+        overflow-wrap: break-word;
+        background-color: rgb(255, 255, 255);
+        background-clip: border-box;
+        max-width: 25rem;
+        max-height: 35rem;
+        box-shadow: rgba(114, 124, 245, 0.5) 0px 2px 6px 0px;
+        position: fixed;
+        bottom: 35rem;
+        top:1rem;
+        left: 5rem;
+        border-width: 0px;
+        border-radius: 0.4rem;
+        flex: 1 1 auto;
+        padding: 0.75rem 1.25rem;
+    }
+    .input-item-text {
+        width: 5rem;
+        text-align: justify;
+        padding: 0.4rem 0.7rem;
+        display: inline-block;
+        text-justify: distribute-all-lines;
+        text-align-last: justify;
+        -moz-text-align-last: justify;
+        -webkit-text-align-last: justify;
+        -ms-flex-align: center;
+        align-items: center;
+        margin-bottom: 0;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #495057;
+        text-align: center;
+        white-space: nowrap;
+        background-color: #e9ecef;
+        border: 1px solid #ced4da;
+        border-radius: .25rem;
+        border-bottom-right-radius: 0;
+        border-top-right-radius: 0;
+    }
+    .amap-logo{
+        display: none;
+        opacity:0 !important;
+    }
+    .amap-copyright {
+        opacity:0;
+    }
+    .amap-icon img{
+        width: 25px;
+        height: 34px;
+    }
+    .custom-input-card{
+        width: 18rem;
+    }
+    .custom-input-card .btn:last-child{
+        margin-left: 1rem;
+    }
+    .content-window-card{
+        position: relative;
+        width: 23rem;
+        padding: 0.75rem 0 0 1.25rem;
+        box-shadow: none;
+        bottom: 0;
+        left: 0;
+    }
+    .content-window-card p{
+        height: 2rem;
+    }
+    .serach_area{position: absolute;top:15px;left: 118px;z-index: 9;}
+    .serach_area .btn{height: 33px;}
+ 
+    .info {
+        float: left;
+        margin: 0 0 0 10px;
+    }
+    label {
+        width: 80px;
+        float: left;
+    }
+    .detail {
+        padding: 10px;
+        border: 1px solid #aaccaa;
+    }
+    .custom-content-marker {
+        position: relative;
+        width: 25px;
+        height: 34px;
+    }
+ 
+    .custom-content-marker img {
+        width: 100%;
+        height: 100%;
+    }
+ 
+    .custom-content-marker .close-btn {
+        position: absolute;
+        top: -6px;
+        right: -8px;
+        width: 15px;
+        height: 15px;
+        font-size: 12px;
+        background: #ccc;
+        border-radius: 50%;
+        color: #fff;
+        text-align: center;
+        line-height: 15px;
+        box-shadow: -1px 1px 1px rgba(10, 10, 10, .2);
+    }
+ 
+    .custom-content-marker .close-btn:hover{
+        background: #666;
+    }
+    .btn{
+        width:6rem;
+        margin-left:2rem;
+    }
+</style>
+<script>
+$(function () {
+    init();//初始化地图
+    plugins();//插件加载
+    menus();
+})
+var map;
+var placeSearch;
+var lng1;
+var lat1;
+var lng2;
+var lat2;
+var driving;
+var marker;
+var startIcon;
+var endIcon;
+var markers;
+ 
+var activityMarker;//正在操作的marker
+var myMarker;//自定义marker
+var startPoint = [];
+var endPoint = [];
+var middlePoint = [];
+var curPoint = [];
+var startMarker;
+var endMarker;
+var viaMarker;
+var middleMarker = [];
+var a = 0;
+var wayMarker = [];
+var lnglat
+//地图初始化加载
+var init = function() {
+    lnglat = new AMap.LngLat(104.066, 30.657);
+    map = new AMap.Map('container', {
+        resizeEnable: true,
+        center: lnglat,
+        zoom: 11,
+        viewMode: '3D'//使用3D视图
+    });
+}
+var plugins = function(){
+    AMap.plugin(['AMap.ToolBar','AMap.Driving','AMap.Autocomplete','AMap.PlaceSearch'],function () {
+        var toolbar = new AMap.ToolBar();
+        map.addControl(toolbar);
+        var driving = new AMap.Driving({
+            // 驾车路线规划策略，AMap.DrivingPolicy.LEAST_TIME是最快捷模式
+            policy: AMap.DrivingPolicy.LEAST_TIME
+        })
+        map.addControl(driving);
+        // 实例化Autocomplete
+        var autoOptions = {
+            input:"tipinput"
+        }
+        var autoOptions1 = {
+            input:"tipinput1"
+        }
+        autoComplete = new AMap.Autocomplete(autoOptions);
+        autoComplete1 = new AMap.Autocomplete(autoOptions1);
+        map.addControl(autoComplete);
+        placeSearch = new  AMap.PlaceSearch();
+        map.addControl(placeSearch);
+        AMap.event.addListener(autoComplete,"select",select);//注册监听
+        AMap.event.addListener(autoComplete1,"select",select1);//注册监听
+    });
+}
+var result;
+//起点地址输入框监听
+function select(e){
+    placeSearch.setCity(e.poi.adcode);
+    lng1 = e.poi["location"]['lng'];//关键字查询
+    lat1 = e.poi["location"]['lat'];//关键字查询
+}
+//终点地址输入框监听
+function select1(e){
+    placeSearch.setCity(e.poi.adcode);
+    lng2 = e.poi["location"]['lng'];//关键字查询
+    lat2 = e.poi["location"]['lat'];//关键字查询
+}
+function selectx(e){
+    placeSearch.setCity(e.poi.adcode);
+    lng = e.poi["location"]['lng'];//关键字查询
+    lat = e.poi["location"]['lat'];//关键字查询
+    var way =[];
+    way.push(lng)
+    way.push(lat)
+    middlePoint.push(way)
+}
+//地址回显
+function geocoder() {
+    var MGeocoder;
+    //加载地理编码插件
+    map.plugin(['AMap.ToolBar','AMap.Scale','AMap.OverView','AMap.MapType','AMap.Geolocation'],
+        function(){
+            map.addControl(new AMap.ToolBar());
+            map.addControl(new AMap.Scale());
+            map.addControl(new AMap.OverView({isOpen:true}));
+            map.addControl(new AMap.MapType());
+            map.addControl(new AMap.Geolocation());
+        });
+    map.plugin(["AMap.Geocoder"], function () {
+        MGeocoder = new AMap.Geocoder({
+            radius: 1000,
+            extensions: "all"
+        });
+        //返回地理编码结果
+        AMap.event.addListener(MGeocoder, "complete", geocoder_CallBack);
+ 
+        //逆地理编码
+        MGeocoder.getAddress(lnglatXY);
+    });
+    /*    //加点
+            marker = new AMap.Marker({
+            map: map,
+            icon: new AMap.Icon({
+                image: "https://webapi.amap.com/theme/v1.3/markers/n/mark_bs.png" ,
+                size: new AMap.Size(58, 30),
+                imageOffset: new AMap.Pixel(-0, -0)
+            }),
+            position: lnglatXY,
+            offset: new AMap.Pixel(-5, -30)
+        });*/
+    // mapObj.setFitView();
+}
+//起点地址回显
+function geocoderStart() {
+    var MGeocoder;
+    //加载地理编码插件
+    map.plugin(['AMap.ToolBar','AMap.Scale','AMap.OverView','AMap.MapType','AMap.Geolocation'],
+        function(){
+            map.addControl(new AMap.ToolBar());
+            map.addControl(new AMap.Scale());
+            map.addControl(new AMap.OverView({isOpen:true}));
+            map.addControl(new AMap.MapType());
+            map.addControl(new AMap.Geolocation());
+        });
+    map.plugin(["AMap.Geocoder"], function () {
+        MGeocoder = new AMap.Geocoder({
+            radius: 1000,
+            extensions: "all"
+        });
+        //返回地理编码结果
+        AMap.event.addListener(MGeocoder, "complete", geocoder_Start);
+        //逆地理编码
+        MGeocoder.getAddress(lnglatXY);
+    });
+}
+//终点地址回显
+function geocoderEnd() {
+    var MGeocoder;
+    //加载地理编码插件
+    map.plugin(['AMap.ToolBar','AMap.Scale','AMap.OverView','AMap.MapType','AMap.Geolocation'],
+        function(){
+            map.addControl(new AMap.ToolBar());
+            map.addControl(new AMap.Scale());
+            map.addControl(new AMap.OverView({isOpen:true}));
+            map.addControl(new AMap.MapType());
+            map.addControl(new AMap.Geolocation());
+        });
+    map.plugin(["AMap.Geocoder"], function () {
+        MGeocoder = new AMap.Geocoder({
+            radius: 1000,
+            extensions: "all"
+        });
+        //返回地理编码结果
+        AMap.event.addListener(MGeocoder, "complete", geocoder_End);
+        //逆地理编码
+        MGeocoder.getAddress(lnglatXY);
+    });
+}
+//回调函数
+function geocoder_CallBack(data) {
+    var address;
+    //返回地址描述
+    address = data.regeocode.formattedAddress;
+    if (a>1){
+        var str = "input"+(a-1);
+        document.getElementById(str).value = address;
+        return;
+    }
+    //返回结果拼接输出
+    document.getElementById("input0").value = address;
+ 
+}
+//起点回调函数
+function geocoder_Start(data) {
+    var address;
+    //返回地址描述
+    address = data.regeocode.formattedAddress;
+    //返回结果拼接输出
+    document.getElementById("tipinput").value = address;
+}
+//终点回调函数
+function geocoder_End(data) {
+    var address;
+    //返回地址描述
+    address = data.regeocode.formattedAddress;
+    //返回结果拼接输出
+    document.getElementById("tipinput1").value = address;
+}
+//右键菜单
+var menus=function () {
+    // 创建一个 Icon
+    startIcon = new AMap.Icon({
+        // 图标尺寸
+        size: new AMap.Size(25, 34),
+        // 图标的取图地址
+        image: '//a.amap.com/jsapi_demos/static/demo-center/icons/dir-marker.png',
+        // 图标所用图片大小
+        imageSize: new AMap.Size(135, 40),
+        // 图标取图偏移量
+        imageOffset: new AMap.Pixel(-9, -3)
+    });
+ 
+    // 将 icon 传入 marker
+    startMarker = new AMap.Marker({
+        position: new AMap.LngLat(104.066, 30.657),
+        icon: startIcon,
+        offset: new AMap.Pixel(-13, -30)
+    });
+    // 创建一个 icon
+    endIcon = new AMap.Icon({
+        size: new AMap.Size(25, 34),
+        image: '//a.amap.com/jsapi_demos/static/demo-center/icons/dir-marker.png',
+        imageSize: new AMap.Size(135, 40),
+        imageOffset: new AMap.Pixel(-95, -3)
+    });
+ 
+    // 将 icon 传入 marker
+    endMarker = new AMap.Marker({
+        position: new AMap.LngLat(104.066, 30.657),
+        icon: endIcon,
+        offset: new AMap.Pixel(-13, -30)
+    });
+    // 将 markers 添加到地图
+    // map.add([viaMarker, startMarker, endMarker]);
+    var contextMenu = new AMap.ContextMenu();  //创建菜单
+    contextMenu.addItem("设为起点", function() {
+        startPoint = curPoint;
+        if(startMarker!=undefined && startMarker!=null){
+            map.remove(startMarker);
+        }
+        startMarker = new AMap.Marker({
+            position:contextMenuPositon,//activityMarker.getPosition(),
+            icon: startIcon,
+            offset: new AMap.Pixel(-12, -35),
+            map: map
+        });
+        startMarker.pointType = '1';//起点
+        //remove();
+        lng1=curPoint[0];
+        lat1=curPoint[1];
+        lnglatXY = new AMap.LngLat(lng1, lat1);
+        geocoderStart();
+    }, 0);
+    contextMenu.addItem("设为途径点", function() {
+        middlePoint.push(curPoint);
+        viaMarker = new AMap.Marker({
+            position: contextMenuPositon,
+            icon: new AMap.Icon({
+                size: new AMap.Size(30, 47),  //图标大小
+                image: "//a.amap.com/jsapi_demos/static/demo-center/icons/dir-via-marker.png"
+            }),
+            offset: new AMap.Pixel(-12, -35),
+            map: map
+        });
+        viaMarker.pointType = '2';//途径点
+        lng=curPoint[0];
+        lat=curPoint[1];
+        lnglatXY = new AMap.LngLat(lng, lat);
+        //remove();
+        //_onDisplay();
+        add_div2();
+        geocoder();
+        middleMarker.push(viaMarker);
+    }, 1);
+    contextMenu.addItem("设为终点", function(e) {
+        endPoint = curPoint;
+        if(endMarker!=undefined && endMarker!=null){
+            map.remove(endMarker);
+        }
+        endMarker = new AMap.Marker({
+            position: contextMenuPositon,//activityMarker.getPosition(),
+            icon: endIcon,
+            offset: new AMap.Pixel(-12, -35),
+            map: map
+        });
+        endMarker.pointType = '3';//终点
+        //remove();
+        lng2=curPoint[0];
+        lat2=curPoint[1];
+        lnglatXY = new AMap.LngLat(lng2, lat2);
+        geocoderEnd();
+        pandl();
+    }, 2);
+    //给地图绑定单击事件创建Marker
+    /*var _onClick = function(e) {
+        if(myMarker!=undefined)
+            map.remove(myMarker); //如果地图上已存在一个自定义的Marker则删除
+        myMarker = new AMap.Marker({
+            position: e.lnglat,
+            map: map
+        })
+        //给自定义的Marker绑定事件-右键菜单
+        myMarker.on('rightclick', function(e) {
+            activityMarker = this;
+            curPoint = [e.lnglat.lng,e.lnglat.lat];
+            contextMenu.open(map, e.lnglat);
+        });
+    }*/
+    //地图绑定鼠标右击事件——弹出右键菜单
+    map.on('rightclick', function (e) {
+        activityMarker = this;
+        curPoint = [e.lnglat.lng,e.lnglat.lat];
+        contextMenu.open(map, e.lnglat);
+        contextMenuPositon = e.lnglat;
+    });
+ 
+    contextMenu.open(map, lnglat);
+    //var mapClickListener = AMap.event.addListener(map, "click", _onClick);//绑定地图事件
+}
+//移除标记点
+function remove() {
+    map.remove(myMarker);
+}
+var getlng = function () {
+    map.plugin('AMap.Geolocation', function() {
+        geolocation = new AMap.Geolocation({
+            enableHighAccuracy: true,//是否使用高精度定位，默认:true
+            timeout: 10000,          //超过10秒后停止定位，默认：无穷大
+            buttonPosition:'RB',    //定位按钮的停靠位置
+            buttonOffset: new AMap.Pixel(10, 20), //定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
+            zoomToAccuracy: true,   //定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
+        });
+        map.addControl(geolocation);
+        geolocation.getCurrentPosition();
+        AMap.event.addListener(geolocation, 'complete', onComplete); //返回定位信息
+        AMap.event.addListener(geolocation, 'error', onError); //返回定位出错信息
+ 
+    });
+    //解析定位结果
+    function onComplete(data) {
+        document.getElementById('status').innerHTML='定位成功'
+        var str = [];
+ 
+        str.push('定位结果：' + data.position);
+        str.push('定位类别：' + data.location_type);
+        if(data.accuracy){
+            str.push('精度：' + data.accuracy + ' 米');
+        }//如为IP精确定位结果则没有精度信息
+        str.push('是否经过偏移：' + (data.isConverted ? '是' : '否'));
+        document.getElementById('result').innerHTML = str.join('<br>');
+ 
+        var lnglatXY = [data.position.getLng(), data.position.getLat()];//地图上所标点的坐标
+        AMap.service('AMap.Geocoder',function() {//回调函数
+            geocoder = new AMap.Geocoder({
+            });
+            geocoder.getAddress(lnglatXY, function (status, result) {
+                if (status === 'complete' && result.info === 'OK') {
+                    //获得了有效的地址信息:
+                    //即，result.regeocode.formattedAddress
+                    var address = result.regeocode.formattedAddress;
+                    document.getElementById('address').innerHTML='详细地址：'+address;
+                } else {
+                    //获取地址失败
+                }
+            });
+        })
+ 
+    }
+    //解析定位错误信息
+    function onError(data) {
+        document.getElementById('status').innerHTML='定位失败'
+        document.getElementById('result').innerHTML = '失败原因排查信息:'+data.message;
+    }
+}
+//清除路径
+function clears() {
+    if (driving){
+        driving.clear();
+    }
+    document.getElementById("tipinput").value ="";
+    document.getElementById("tipinput1").value ="";
+    map.remove(startMarker);
+    map.remove(middleMarker);
+    map.remove(endMarker);
+    wayMarker.splice(0)
+    middlePoint.splice(0)
+    for (var j=0;j<= a;j++ ){
+        var stt = "input"+j;
+        var El= document.getElementById(stt);
+        if (El){
+            El.value ="";
+        }
+    }
+}
+//路径规划
+function pandl () {
+    if (driving){
+        driving.clear();
+    }
+    var policy = $('#select option:selected').val();
+    //构造路线导航类
+    var drivingOption = {
+        policy: policy,
+        ferry: 1, // 是否可以使用轮渡
+        map: map,
+        panel: 'panel'
+    }
+    wayMarker=$.grep(middlePoint,function(n,i){
+        return n;
+    },false);
+    driving = new AMap.Driving(drivingOption);
+    // 根据起终点经纬度规划驾车导航路线
+    driving.search(new AMap.LngLat(lng1,lat1), new AMap.LngLat(lng2,lat2),{
+        waypoints:wayMarker
+    }, function(status, result) {
+        if (status === 'complete') {
+            log.success('绘制驾车路线完成')
+        } else {
+            log.error('获取驾车数据失败：' + result)
+        }
+    });
+}
+//途径点添加与删除
+var detail_div = 1;
+var max = 5;
+function add_div2() {
+    if (detail_div<max){
+        var str='<div id="details'+a +'"class="input-item">'+
+            '<div class="input-item-prepend"><span class="input-item-text">途径点</span></div>'+
+            '<input  id="input'+a +'"type='+'"text"/>' +
+            '<button type="button"  id="del-btn" onclick="del_div(this)">-</button>'+'</div>';
+        $('#form').append(str);
+        var wap = 'input'+a;
+        var autoOptionsx = {
+            input: wap
+        }
+        autoCompletex = new AMap.Autocomplete(autoOptionsx);
+        AMap.event.addListener(autoCompletex,"select",selectx);//注册监听
+        detail_div++;
+        a++;
+    }
+}
+function add_div() {
+    var e = document.getElementById("details");
+    var div = document.createElement("div");
+    if (detail_div<=4){
+        div.className = "input-item";
+        div.id = "details" + detail_div;
+        div.innerHTML = e.innerHTML;
+        document.getElementById("form").appendChild(div);
+        detail_div++;
+    }
+    return false;
+}
+function del_div(obj) {
+    $(obj).parent().remove();
+    var s = $(obj).parent().attr("id");
+    var ss= s.substr(7);
+ 
+    middlePoint.splice(parseInt(ss),1,null);
+    detail_div--;
+}
+</script>
+<div id="container">
+</div>
+<div class="">
+</div>
+<table class="input-card" style='height: max-content;width: max-content;table-layout: fixed;'>
+    <tbody>
+    <tr>
+        <td>
+            <label style='color:grey'>路线规划</label>
+        </td>
+    </tr>
+    </tbody>
+    <tbody>
+    <tr>
+        <td>
+            <div class="input-item">
+                <div class="input-item-prepend"><span class="input-item-text" >起点</span></div>
+                <input id='tipinput' type="text" >
+            </div>
+        </td>
+    </tr>
+    </tbody>
+    <tbody>
+    <tr id="tr">
+        <td id="form" >
+        </td>
+    </tr>
+    </tbody>
+    <tbody>
+    <tr>
+        <td>
+            <div class="input-item">
+                <div class="input-item-prepend"><span class="input-item-text">终点</span></div>
+                <input id='tipinput1'  type="text">
+                <button type="button"  id="add-btn" onclick="add_div2()">+</button>
+            </div>
+        </td>
+        <td>
+        </td>
+    </tr>
+    </tbody>
+    <tbody>
+    <tr>
+        <td>
+            <div class="input-item">
+                <div class="input-item-prepend"><span class="input-item-text">路线策略</span></div>
+                <select  id="select">
+                    <option value="0">最快捷模式</option>
+                    <option value="1">最经济模式</option>
+                    <option value="2">最短距离模式</option>
+                    <option value="4">考虑实时路况</option>
+                </select>
+            </div>
+        </td>
+    </tr>
+    </tbody>
+    <tbody>
+    <tr>
+        <td>
+            <button  class="btn" onclick="pandl()">路线规划</button>
+        </td>
+        <td>
+            <button  class="btn" onclick="clears()">路线清除</button>
+        </td>
+    </tr>
+    </tbody>
+</table>
+<div id="panel"></div>
+<script src="${ctxPath}/static/modular/monitoring/map/mapDisplays.js${jsv}"></script>
+<script src="https://webapi.amap.com/maps?v=1.4.15&key=申请的K值&plugin=AMap.Autocomplete"></script>
+<script src="https://a.amap.com/jsapi_demos/static/demo-center/js/demoutils.js"></script>
+<script type="text/javascript" src="https://cache.amap.com/lbs/static/addToolbar.js"></script>
+<script src="//webapi.amap.com/ui/1.1/main.js"></script>
+<!--引入UI组件库异步版本main-async.js（1.1版本） -->
+<script src="//webapi.amap.com/ui/1.1/main-async.js"></script>

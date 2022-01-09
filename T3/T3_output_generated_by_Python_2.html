@@ -37,7 +37,7 @@
 <script type="text/javascript">
     var map = new AMap.Map("container", {resizeEnable: true,center: [116.397428, 39.90923],zoom: 13});
     var driving = new AMap.Driving({map: map,panel: "panel"}); 
-driving.search(new AMap.LngLat(119.75001,29.99805), new AMap.LngLat(119.944296584982,30.097262635875), {waypoints:[new AMap.LngLat(119.934256663262,30.038822422433), new AMap.LngLat(119.945421709799,30.045358805853), new AMap.LngLat(119.87356,29.99376), new AMap.LngLat(119.938346115923,30.05770211121)]}, function(status, result) {
+driving.search(new AMap.LngLat(119.75001,29.99805), new AMap.LngLat(119.944296584982,30.097262635875), {waypoints:[new AMap.LngLat(119.934256663262,30.038822422433)]}, function(status, result) {
         if (status === 'complete') {
             log.success('Completed Drawing Driving Paths')
         } else {
