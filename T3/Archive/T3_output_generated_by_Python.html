@@ -37,7 +37,7 @@
 <script type="text/javascript">
     var map = new AMap.Map("container", {resizeEnable: true,center: [116.397428, 39.90923],zoom: 13});
     var driving = new AMap.Driving({map: map,panel: "panel"}); 
-driving.search(new AMap.LngLat(119.75001,29.99805), new AMap.LngLat(119.944296584982,30.097262635875), {waypoints:[new AMap.LngLat(119.934256663262,30.038822422433)]}, function(status, result) {
+driving.search(new AMap.LngLat(119.891836841929,30.05821063413), new AMap.LngLat(119.75001,29.99805), {waypoints:[new AMap.LngLat(120.030650057354,30.033001385081), new AMap.LngLat(119.988072555233,30.069137945355), new AMap.LngLat(119.697746222762,29.984817036958), new AMap.LngLat(119.893050007208,30.064440002077), new AMap.LngLat(119.954771379323,30.057509470828), new AMap.LngLat(119.87356,29.99376), new AMap.LngLat(119.938346115923,30.05770211121), new AMap.LngLat(119.971807169923,30.031203474998), new AMap.LngLat(119.961144852051,30.030052570865), new AMap.LngLat(119.988101918469,30.069178386718), new AMap.LngLat(119.917848478986,30.066553789586), new AMap.LngLat(119.72229,29.9667), new AMap.LngLat(119.95238,30.07537), new AMap.LngLat(119.870459933587,29.914567752373), new AMap.LngLat(119.971528287016,30.038272696524), new AMap.LngLat(119.946664272439,30.046655271192)]}, function(status, result) {
         if (status === 'complete') {
             log.success('Completed Drawing Driving Paths')
         } else {
