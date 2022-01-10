@@ -3,6 +3,9 @@
 
 # 预计运行时间：15分钟
 
+# 程序依赖安装：
+# pip install pandas openpyxl xlrd xlwt
+
 # 程序输入输出介绍：
 # 1. 程序输入：考试数据.xls，为本次发放的考试数据
 # 2. 程序输出：
@@ -88,7 +91,10 @@ def get_processed_location(returned_result):
     elif (returned_result == '-2'):
         return 'error: 输入坐标不全!'
 ##################################################################################
-
+# 函数功能：对最后的excel进行格式调整
+# 作者：孟昊阳
+# 主要思路：
+# 具体实现：如代码中注释所述
 ##################################################################################
 def set_format():
     try:
@@ -138,12 +144,11 @@ def GPS_GET():
         output_list = output_list.append(pd.DataFrame({'GPS地址': [GPS]}), ignore_index=True)
         print(step_counter, ": ", GPS)
         step_counter = step_counter + 1
-
+    #下面都是对Datafarme数据的调整
+###############################################################################################################
     data3 = [{'GPS地址': 'GPS地址'}]
     df_blank3 = pd.DataFrame(data3)
     output_list = df_blank3.append(output_list, ignore_index=True)
-
-    ################################################
     df_base = df['Unnamed: 7']
     df_base2 = df['Unnamed: 8']
     df_base = df_base[1:]
@@ -178,7 +183,10 @@ def GPS_GET():
         print("Error: 文件 (GPS数据结果.xlsx) 被占用!")
         quit()
 ##################################################################################
-
+# 函数功能：将GPS数据结果重新读取，单独获得GPS的数据对，并进行可视化（将报警高发地标注出来用，可视化处理由胡文强进行）
+# 作者：孟昊阳
+# 主要思路：
+# 具体实现：如代码中注释所述
 ##################################################################################
 def GPS_double_get():
     try:
@@ -204,7 +212,7 @@ def GPS_double_get():
 if __name__ == "__main__":
     T1 = time.time() # 计时
     GPS_GET()
-    # GPS_double_get() # 暂时不进行使用
+    # GPS_double_get() # 暂时不进行使用（输出可视化报警地区）
     set_format() # 设置excel表格格式
     T2 = time.time() # 计时
     print('程序运行时间:%s秒' % (T2 - T1))

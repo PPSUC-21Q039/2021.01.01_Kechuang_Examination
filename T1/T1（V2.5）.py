@@ -5,6 +5,9 @@
 
 # 预计运行时间：8分钟
 
+# 程序依赖安装：
+# python -m pip install xlsxwriter id_validator phone xlrd xlwt
+
 # 程序输入输出介绍：
 # 1. 程序输入：考试数据.xls，为本次发放的考试数据
 # 2. 程序输出：
@@ -105,7 +108,7 @@ def get_id_information_address(input_id_number):
 ##################################################################################
 
 ##################################################################################
-# 代码功能：将姓名，身份证，住址，年龄，社区等信息放在excel表格内   ——V 0.5 Demo
+# 函数功能：将姓名，身份证，住址，年龄，社区等信息放在excel表格内   
 # 作者：孟昊阳
 # 主要思路：
 # 具体实现:
@@ -169,9 +172,14 @@ def main_function():
     end_time = time.time()
     print ("Used Time: ", end_time - start_time,'s')
 ##################################################################################
+# 函数功能： 将年龄输入到excel表格，排序制图
+# 作者：孟昊阳，胡文强
+# 主要思路：
+# 具体实现:
 
 ##################################################################################
 def print_phonenumber():
+    #定义的统计年龄频数的函数
     def year_repeat(df_year1, df_year2):
         try:
             workbook = xlsxwriter.Workbook(r'./高发年龄段统计.xlsx')
@@ -180,13 +188,13 @@ def print_phonenumber():
             quit()
         worksheet = workbook.add_worksheet('statistics')
         bold_format = workbook.add_format({'bold': True})
-        # 将二行二列设置宽度为15(从0开始)
         worksheet.set_column(1, 1, 10)
         # 用符号标记位置，例如：A列1行
         worksheet.write('A1', '年龄', bold_format)
         worksheet.write('B1', '人数', bold_format)
         row = 1
         col = 0
+        #将结果输出到excel
         for year1 in (df_year1):
             worksheet.write(row, col, year1)
             row += 1
@@ -228,8 +236,7 @@ def print_phonenumber():
         sheet = reader.sheet_by_name("Sheet1")
 
         column1 = sheet.col_values(3)  # 统计文件中的第三列数据
-        # print(column1)
-        # 统计评分个数
+        # print(column1)测试用的print函数
         result = {}
         for i in set(column1):
             result[i] = column1.count(i)
@@ -240,8 +247,7 @@ def print_phonenumber():
             pass
         
         data = result
-        # print(data)
-        # 新建列表储存图书信息Book score和Quantity信息
+        #将年龄和人数组成字典
         yeardic = []
 
         for key in data:
@@ -257,10 +263,14 @@ def print_phonenumber():
         a = list(map(int, a))
         b = list(map(int, b))
 
-        # print(a)
-        # print(b)
+        # print(a)测试
+        # print(b)测试
         year_repeat(a, b)
 ##################################################################################
+# 函数功能： 将高发电话号归属地输入到excel表格，排序制图
+# 作者：孟昊阳，胡文强
+# 主要思路：
+# 具体实现:
 
 ##################################################################################
 def print_addressnumber():
@@ -322,10 +332,10 @@ def print_addressnumber():
 
         column2 = sheet.col_values(5)  # 统计文件中的第6列数据
         # print(column1)
-        # 统计评分个数
         result = {}
         for i in (column2):
             result[i] = column2.count(i)
+        #删除一些不必要数据
         try:    
             del result['error: 虚拟号码!']
             del result['error: 非法号码!']
@@ -335,9 +345,8 @@ def print_addressnumber():
             pass
         data = result
         # print(data)
-        # 新建列表储存图书信息Book score和Quantity信息
         addressdic = []
-
+        #将电话号归属地和出现频数组成字典
         for key in data:
             bookdata = {"电话号归属地": key, "人数": data[key]}
             addressdic.append(bookdata)
@@ -355,7 +364,10 @@ def print_addressnumber():
         # print(b)
         address_repeat(a, b)
 ##################################################################################
-
+# 函数功能： 将高发人员户籍输入到excel表格，排序制图
+# 作者：孟昊阳，胡文强
+# 主要思路：
+# 具体实现:
 ##################################################################################
 def print_province():
     def province_repeat(df_province1, df_province2):
@@ -415,13 +427,10 @@ def print_province():
         sheet = reader.sheet_by_name("Sheet1")
 
         column3 = sheet.col_values(4)  # 统计文件中的第5列数据
-
         # print(column1)
-        # 统计评分个数
-
         result = []
         result_province = {}
-
+        #对第五列数据进行修改和删去不必要数据
         for i in (column3):
             if type(eval("i")) == float:
                 a = str(i)
@@ -444,9 +453,8 @@ def print_province():
 
         data = result_province
         # print(data)
-        # 新建列表储存图书信息Book score和Quantity信息
         provincedic = []
-
+        #将报警人员的省份和出现的频数组成字典
         for key in data:
             bookdata = {"省份": key, "人数": data[key]}
             provincedic.append(bookdata)
@@ -471,7 +479,7 @@ if __name__ == "__main__":
     print_phonenumber()
     print_addressnumber()
     print_province()
-
+#原为对表格格式的调整，由于xlrd库的对excel版本限制，所以没有放到结果里（上面输出结果是xls格式）
     #wb = load_workbook(r'./数据结果.xlsx')
     #ws = wb[wb.sheetnames[0]]  # 打开第一个sheet
     #ws.column_dimensions['A'].width = 19.0  # 调整列A宽
